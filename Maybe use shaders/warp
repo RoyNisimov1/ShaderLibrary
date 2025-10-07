@@ -1,0 +1,72 @@
+#version 330 core
+
+// -------------------------------------------------------------------
+// UNIFORMS (Inputs from Python/ModernGL)
+// -------------------------------------------------------------------
+
+// The texture we are sampling from.
+uniform sampler2D tex;
+
+// Time in seconds, updated every frame by the host application.
+uniform float time;
+
+// The texture coordinates passed from the vertex shader (typically 0.0 to 1.0).
+in vec2 uvs;
+
+uniform float baseStrength;
+uniform float speed;
+uniform float waveFrequency;
+uniform float maxCornerDist;
+
+
+// -------------------------------------------------------------------
+// OUTPUT
+// -------------------------------------------------------------------
+
+// The final color output to the framebuffer.
+out vec4 fragColor;
+
+
+void main() {
+
+    // --- Attenuation Parameters ---
+    // The maximum distance from center (0.5, 0.5) to a corner (0.0, 0.0) is sqrt(0.5^2 + 0.5^2) approx 0.707.
+    float maxCornerDist = 0.707;
+    // Higher power makes the distortion more focused on the very center.
+    float falloffPower = 4.0;
+
+    // 1. Calculate the base texture coordinate offsets (dx and dy).
+
+    // Horizontal Offset (dx)
+    float dx_base = sin(uvs.y * waveFrequency + time * speed) * baseStrength;
+
+    // Vertical Offset (dy)
+    float dy_base = sin(uvs.x * waveFrequency + time * speed * 0.5) * baseStrength;
+
+    // 2. Create the central attenuation mask.
+
+    // Calculate the distance from the center (0.5, 0.5).
+    float dist = distance(uvs, vec2(0.5, 0.5));
+
+    // Normalize the distance (0.0 at center, 1.0 at corners).
+    float normalizedDist = dist / maxCornerDist;
+
+    // Create the mask (1.0 at center, 0.0 at corners).
+    float mask = 1.0 - normalizedDist;
+
+    // Use a power function to smooth the falloff and concentrate the effect.
+    mask = pow(mask, falloffPower);
+
+    // 3. Apply the mask to the base offsets.
+    float dx = dx_base * mask;
+    float dy = dy_base * mask;
+
+    // 4. Apply the offsets to the original uvs coordinates.
+    vec2 distorteduvs = uvs + vec2(dx, dy);
+
+    // 5. Sample the texture at the distorted coordinate.
+    vec4 textureColor = texture(tex, distorteduvs);
+
+    // 6. Output the color.
+    fragColor = textureColor;
+}
