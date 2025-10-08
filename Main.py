@@ -67,7 +67,7 @@ while running:
     # bg_shader2.render_texture(color_texture, flip_y=True, time=t)
 
     bg_shaders.render(pnois, (0, 0), fbo, [{"color": bg_color, "darkness_mult": 0.5}, {"time": t}])
-    #pixalation_normal_shader_chain.render(screen, (0, 0), fbo, args_for_shaders=[{"pixelSize": 5}])
+    #pixalation_normal_shader_chain.render_framebuffer(fbo, args_for_shaders=[{"pixelSize": 200}])
 
     #pixalation_shader.render_frame_buffer(fbo=fbo, pixelSize=1000)
     crt_shader.render_frame_buffer(fbo=fbo, u_rgb_shift=0.01)

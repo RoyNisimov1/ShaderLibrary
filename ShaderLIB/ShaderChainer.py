@@ -30,3 +30,22 @@ class ShaderChainer:
                 continue
             self.shaders[i].render_texture(self.color_texture, self.fbo, **args_for_shaders[i])
         self.shaders[len(self.shaders)-1].render_texture(self.color_texture, render_fbo, flip_y=True,  **args_for_shaders[len(self.shaders)-1])
+
+
+    def render_framebuffer(self, render_fbo=None, args_for_shaders: list[dict]= None):
+        self.fbo.clear()
+        if args_for_shaders is None:
+            args_for_shaders = []
+            for i in range(len(self.shaders)):
+                args_for_shaders.append({})
+        if len(args_for_shaders) < len(self.shaders):
+            for i in range(len(self.shaders) - len(args_for_shaders)):
+                args_for_shaders.append({})
+
+        for i in range(len(self.shaders) - 1):
+            if i == 0:
+                self.shaders[i].render_frame_buffer(render_fbo, **args_for_shaders[i])
+                continue
+            self.shaders[i].render_frame_buffer(render_fbo, **args_for_shaders[i])
+        self.shaders[len(self.shaders) - 1].render_frame_buffer(render_fbo, flip_y=True,
+                                                           **args_for_shaders[len(self.shaders) - 1])
